@@ -6,7 +6,8 @@ class Grid(object):
 
 	def __init__(self):
 		self.__initTable()
-		super()
+		self.__score = 0
+
 
 	def __initTable(self):
 		self.__table = [[Tile() for z in range(Settings.SIZE)]
@@ -17,6 +18,9 @@ class Grid(object):
 
 	def set(self, x, y, value):
 		self.__table[x][y].value = value
+
+	def getScore(self):
+		return self.__score
 
 	def getTable(self):
 		return [[x.value for x in row] for row in self.__table]
@@ -45,7 +49,9 @@ class Grid(object):
 		(vecX, vecY) = vector
 		self.__unlockAll()
 
-		self.__isMoved = False		
+		self.__isMoved = False
+		self.__score = 0
+
 		x = 0
 		for y in ran:
 			if vecX == 0:
@@ -89,6 +95,7 @@ class Grid(object):
 		self.set(x,y,0)
 		self.set(x+vecX,y+vecY,value*2)
 		self.__lock(x+vecX,y+vecY)
+		self.__score += value*2
 
 	def __swapTiles(self, posA, posB):
 		(xa,ya) = posA

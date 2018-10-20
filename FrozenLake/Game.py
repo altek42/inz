@@ -32,6 +32,7 @@ class FrozenLake(object):
 	def __reset(self, config):
 		(x,y) = config.StartPosition
 		self.__position= [x,y]
+		self.sPos = self.__position[:]
 		self.__createMap(config)
 	
 	def setPosition(self, x,y):
@@ -67,25 +68,47 @@ class FrozenLake(object):
 		cpMap[self.__position[0]][self.__position[1]]=4
 		return cpMap
 
-	def moveLeft(self):
+	def savePosition(self):
+		self.sPos = self.__position[:]
+	
+	def loadPosition(self):
+		self.__position = self.sPos[:]
+
+	def moveLeft(self, isTest = False):
+		isMove = False
 		if self.__position[1] > 0:
 			self.__position[1] -= 1
-		self.__checkGameStatus()
+			isMove = True
+		if isTest:
+			self.__checkGameStatus()
+		return isMove
 
-	def moveRight(self):
+	def moveRight(self, isTest = False):
+		isMove = False
 		if self.__position[1] < len(self.__map[0])-1:
 			self.__position[1] += 1
-		self.__checkGameStatus()
+			isMove = True
+		if isTest:
+			self.__checkGameStatus()
+		return isMove
 	
-	def moveDown(self):
+	def moveDown(self, isTest = False):
+		isMove = False
 		if self.__position[0] < len(self.__map)-1:
 			self.__position[0] += 1
-		self.__checkGameStatus()
+			isMove = True
+		if isTest:
+			self.__checkGameStatus()
+		return isMove
 
-	def moveUp(self):
+	def moveUp(self, isTest = False):
+		isMove = False
 		if self.__position[0] > 0:
 			self.__position[0] -= 1
-		self.__checkGameStatus()
+			isMove = True
+		if isTest:
+			self.__checkGameStatus()
+		return isMove
 	
 	def __checkGameStatus(self):
 		val = self.__map[self.__position[0]][self.__position[1]]

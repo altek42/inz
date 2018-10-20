@@ -6,6 +6,8 @@ from .const import VECTOR
 class Game(object):
 
 	def __init__(self):
+		self.__score = 0
+		self.__lastMoveScore = 0
 		self.__grid = Grid()
 		self.__addStartTiles()
 	
@@ -15,9 +17,6 @@ class Game(object):
 
 	def __addRandomTile(self):
 		cells = self.__grid.CellsAvailable()
-		if len(cells) == 0:
-			self.__gameOver()
-			return
 		r = random.randint(len(cells))
 		(x, y) = cells[r]
 		if random.rand() < 0.9: 
@@ -31,8 +30,25 @@ class Game(object):
 
 	def Move(self, direction):
 		if self.__grid.Move(VECTOR(direction)):
+			self.__updateScore()
 			self.__addRandomTile()
+		else:
+			cells = self.__grid.CellsAvailable()
+			if len(cells) == 0:
+				self.__gameOver()
+				return
+
+	def __updateScore(self):
+		score = self.__grid.getScore()
+		self.__lastMoveScore = score
+		self.__score += score
 	
+	def GetTotalScore(self):
+		return self.__score
+	
+	def GetLastMoveScore(self):
+		return self.__lastMoveScore
+
 	def __gameOver(self):
 		if self.__gameOverFunc:
 			self.__gameOverFunc()
