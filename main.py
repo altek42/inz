@@ -10,13 +10,12 @@ import pprint
 # from classification.circle2 import circle2
 # from FrozenLake.test import run as frozenLakeTest
 # from ClasicQLearning.start import run as classicQLearning
-from QNetworkFL.start2 import run as qNetworkFL
+# from QNetworkFL.start2 import run as qNetworkFL
 # from QNetworkFL.start import run as qNetworkFL
 # from interpolation.sincos import sincos
-
-
-def gameOver():
-    print('gameOver')
+# from QNetworkFL import FLT1
+# from playgroud.playground import run
+from Tetris.t1 import run
 
 
 if __name__ == '__main__':
@@ -26,6 +25,8 @@ if __name__ == '__main__':
     # x = circle2()
     # frozenLakeTest()
     # classicQLearning()
-    qNetworkFL()
+    # qNetworkFL()
     # game2048()
     # QN2048()
+	# FLT1()
+	run()

@@ -3,29 +3,22 @@ sys.path.append('..')
 from FrozenLake.Game import Config, FrozenLake
 from random import randint
 from random import random
-from Network.Network import Net
+from Network.Network import Net, LearningMethod
 import pprint
 
 
 class qNetAlgorithm(object):
-	EPOCH = 15000
-	GRID_SIZE = 10
+	EPOCH = 50000
+	GRID_SIZE = 4
 
 	def __init__(self):
 		conf = Config()
 		conf.setSize(self.GRID_SIZE, self.GRID_SIZE)
 		conf.setEnd(self.GRID_SIZE-1, self.GRID_SIZE-1)
-		conf.addHole(randint(0, 9), randint(0, 9))
-		conf.addHole(randint(0, 9), randint(0, 9))
-		conf.addHole(randint(0, 9), randint(0, 9))
-		conf.addHole(randint(0, 9), randint(0, 9))
-		conf.addHole(randint(0, 9), randint(0, 9))
-		conf.addHole(randint(0, 9), randint(0, 9))
-		conf.addHole(randint(0, 9), randint(0, 9))
-		conf.addHole(randint(0, 9), randint(0, 9))
-		conf.addHole(randint(0, 9), randint(0, 9))
-		conf.addHole(randint(0, 9), randint(0, 9))
-		conf.addHole(randint(0, 9), randint(0, 9))
+		conf.addHole(1, 1)
+		conf.addHole(1, 3)
+		conf.addHole(0, 3)
+		conf.addHole(3, 2)
 
 		game = FrozenLake(conf)
 		game.print()
@@ -38,8 +31,9 @@ class qNetAlgorithm(object):
 
 	def main(self):
 		self.gameMap = self.game.getMap()
-		self.net = Net(2, 30, 4)
+		self.net = Net(2, 5, 4)
 		self.net.setEpoch(1)
+		# self.net.setLearningMethod(LearningMethod.MOMENTUM)
 		self.train()
 		self.playGame()
 
@@ -50,10 +44,13 @@ class qNetAlgorithm(object):
 			print('\n---\n Move:', i)
 			i += 1
 			self.game.print()
-			(maxQ, index) = self.getMaxQ()
+			# (maxQ, index) = self.getMaxQ()
+			q = self.getQ()
+			index = q.index(max(q))
 			a = [0,0,0,0]
 			a[index] = 1
 			self.printDirection(a)
+			print("Q:",q)
 			self.move(a)
 			if i > 21:
 				return
@@ -79,17 +76,32 @@ class qNetAlgorithm(object):
 			self.createNewGame(posX, posY)
 			while self.gameRuning:
 				state = self.getState()
-				if random() < 0.2:
-					nextMove = self.getRandMove()
+				if random() < 0.1:
+					action = self.getRandMove()
 				else:
-					nextMove = self.getBestMove()
-				qTab = self.qCrossReward()
-				self.net.Train([state], [qTab])
-				self.move(nextMove)
+					action = self.getBestMove()
+				
+				q = self.getQ()
+				isMove = self.move(action)
+				if isMove:
+					maxNextQ = max(q)
+					reward = self.getReward() 
+				else:
+					maxNextQ = 0
+					reward = -1
+				rew = reward + self.gamma * maxNextQ
+				q[self.actionToIndex(action)] = rew
 
+				self.net.Train([state], [q])
+
+				if not isMove:
+					break
 				
 		print()
-	
+
+	def actionToIndex(self, action):
+		return action.index(1)
+
 	def qCrossReward(self):
 		qTab = []
 		for i in range(4):
@@ -127,18 +139,22 @@ class qNetAlgorithm(object):
 		return (q[index], index)
 
 
+	def getQ(self):
+		state = self.getState()
+		return self.net.Sim(state)
+
 	def getReward(self):
 		(x, y) = self.game.getPosition()
 		return self.getRewardForPosition(x,y)
 
 	def getRewardForPosition(self, x, y):
 		if not self.checkPosition(x,y):
-			return -50
+			return -1
 		v = self.gameMap[x][y]
 		if v == 1:
-			return -20
+			return -1
 		if v == 2:
-			return 20
+			return 1
 		return 0
 
 	def checkPosition(self, x, y):
