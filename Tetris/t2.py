@@ -1,4 +1,4 @@
-from .Game2.game import Game
+from .Game3.game import Game
 from Network.Network import Net, LearningMethod
 from Network import LoadNet
 from random import randint
@@ -13,8 +13,8 @@ class script(object):
 		# self.trainForever()
 
 	def run(self):
-		net = self.qlearningNeuralNetwork(50000, 100, 0.8, 0.1)
-		# net = LoadNet('tra_209')
+		net = self.qlearningNeuralNetwork(4, 100, 0.8, 0.1)
+		# net = LoadNet('tra_25640')
 		self.game.reset()
 		self.__gameRunnig = True
 		state = self.game.getState()
@@ -23,8 +23,9 @@ class script(object):
 			action = Q.index(max(Q))
 			self.game.move(action)
 			state = self.game.getState()
-			self.game.print()
-		print(self.game.getScore())
+			# self.game.print()
+		print('Score:', self.game.getScore())
+		print('Height:', self.game.getRemovedLines())
 	
 	def trainForever(self):
 		i = 0
@@ -39,7 +40,7 @@ class script(object):
 			net = self.qlearningNeuralNetwork(50000, 100, 0.8, 0.1, net)
 
 
-	def qlearningNeuralNetwork(self, learningIterations, neuronsCount, gamma, epsilon = 0.1, net=None):
+	def qlearningNeuralNetwork(self, learningGames, neuronsCount, gamma, epsilon = 0.1, net=None):
 		actionCount = self.game.getNumActions()
 		state = self.game.getState()
 
@@ -49,8 +50,8 @@ class script(object):
 
 		bestScore = 0
 
-		for i in range(learningIterations):
-			print('Game Epoch:', i+1, '/', learningIterations, end='\r')
+		for i in range(learningGames):
+			print('Game Epoch:', i+1, '/', learningGames, end='\r')
 			self.__lastHoles = 0
 			self.__gameRunnig = True
 			self.game.reset()
@@ -59,12 +60,12 @@ class script(object):
 			while self.__gameRunnig:
 				Q = net.Sim(state)
 				action = Q.index(max(Q))
-				reward = self.getReward(state)
 
 				if random() < epsilon:
 					action = randint(0, actionCount-1)
 				self.game.move(action)
 				nextState = self.game.getState()
+				reward = self.getReward(nextState)
 				maxNextQ = max(net.Sim(nextState))
 				Q[action] = reward + gamma * maxNextQ
 				net.Train([state], [Q])
@@ -79,11 +80,7 @@ class script(object):
 
 	def getReward(self, state):
 		score = self.game.getScoreDif()
-		holes = state[-1]
-		hill = state[-2]
-		h = holes - self.__lastHoles
-		self.__lastHoles = holes
-		return score - h - hill
+		return score
 
 
 	def handleGameOver(self, isWin):

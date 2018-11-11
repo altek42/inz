@@ -15,7 +15,7 @@ import pprint
 # from interpolation.sincos import sincos
 # from QNetworkFL import FLT1
 # from playgroud.playground import run
-from Tetris.t1 import run
+from Tetris.q1 import run
 
 
 if __name__ == '__main__':

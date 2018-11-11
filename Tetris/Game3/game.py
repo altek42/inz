@@ -72,11 +72,11 @@ D = ([
 ])
 
 BRICKS = [
-	J, I
+	I, J
 ]
 
 BOARD_WIDTH=5
-BOARD_HEIGHT=8
+BOARD_HEIGHT=5
 
 class Brick(object):
 	def __init__(self, shapeNum):
@@ -122,6 +122,7 @@ class Game(object):
 		self.board=[[0 for x in range(BOARD_WIDTH)] for y in range(BOARD_HEIGHT)]
 		self.__brickCouter = 0
 		self.__score = 0
+		self.__removeLines = 0
 		self.__lastScore = 0
 		self.__getNextBrick()
 
@@ -140,7 +141,35 @@ class Game(object):
 
 	def getState(self):
 		
-		return self.__ownStrategyGetState()
+		# return self.__topLevelRepresentationStartegyState()
+		return self.__counturStrategyState()
+		# return self.__ownStrategyGetState()
+
+	def __topLevelRepresentationStartegyState(self):
+		vec = []
+		for row in [-2,-1]:
+			for cell in self.board[row]:
+				if cell == 0:
+					vec.append(0)
+				else:
+					vec.append(1)
+		vec.extend(self.__getBrickState())
+		return vec
+
+	def __counturStrategyState(self):
+		vec = [0 for i in range(BOARD_WIDTH)]
+		for y in range(BOARD_HEIGHT):
+			for x in range(BOARD_WIDTH):
+				if vec[x] == 0 and self.board[y][x] != 0:
+					vec[x] = BOARD_HEIGHT - y
+		countur = []
+		vecIter = iter(vec)
+		lastCell = vecIter.__next__()
+		for cell in vecIter:
+			countur.append(cell- lastCell)
+			lastCell = cell
+		countur.extend(self.__getBrickState())
+		return countur
 
 	def __ownStrategyGetState(self):
 		vec = [0 for i in range(BOARD_WIDTH)]
@@ -168,6 +197,9 @@ class Game(object):
 
 	def getScore(self):
 		return self.__score
+
+	def getRemovedLines(self):
+		return self.__removeLines
 
 	def __getBrickState(self):
 		vec = [0 for x in range(len(BRICKS))]
@@ -197,16 +229,25 @@ class Game(object):
 			self.__newTurn()
 			return False
 		else:
-			self.__score+=1
+			# self.__score+=1
 			return True
 	
 	def __newTurn(self):
 		self.__connectBrictToBoard()
 		self.__getNextBrick()
 		self.__removeFullLines()
-		if not self.__isBoardFirstTwoLinesEmpty():
-			self.__gameOver(False)
+		self.__removeLastLines()
+
 		
+	def __removeLastLines(self):
+		for i in [0,1]:
+			for cell in self.board[2]:
+				if cell != 0:
+					self.board.remove(self.board[-1])
+					self.board.insert(0, [0 for x in range(BOARD_WIDTH)])
+					self.__removeLines += 1
+					break
+
 	def __isBoardFirstTwoLinesEmpty(self):
 		for y in [0,1]:
 			for cell in self.board[y]:
@@ -263,8 +304,8 @@ class Game(object):
 
 	def __getNextBrick(self):
 		if self.__brickCouter > self.brickLimit:
-			self.__score += 1000
-			self.__gameOver(True)
+			# self.__score += 1000
+			self.__gameOver(False)
 			return
 		self.__brickCouter += 1
 		num = random.randint(0, len(BRICKS) -1)
