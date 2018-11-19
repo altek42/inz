@@ -15,16 +15,21 @@ class LearningMethod(Enum):
 	MOMENTUM = 2
 
 
+# def sigmoidStable(x):
+# 	a = []
+# 	for item in x:
+# 		if item >= 0:
+# 			z = np.exp(-item)
+# 			a.append(1/1+z)
+# 		else:
+# 			z = np.exp(item)
+# 			a.append(z/(1+z))
+# 	return np.array(a)
+
 def exponent(x):
 	a = x.astype(np.float128)
-
 	a = np.exp(a)
-
-	# b = a[~np.isfinite(a)]
-	# print(b)
-	# if len(b) > 0:
-	# sys.exit()
-	# a[~np.isfinite(a)] = 1
+	
 	return a
 
 
@@ -73,6 +78,7 @@ class Net(object):
 		fi1 = np.matmul(val, self.__weightW)
 
 		fi1 = (1/(1+exponent(-fi1)))  # sigmoid
+		# fi1=sigmoidStable(fi1)
 		# fi1 = fi1 / 1 + abs(fi1)		#Softsign
 
 		val = fi1.tolist()

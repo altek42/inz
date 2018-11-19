@@ -2,6 +2,8 @@ from .Game3.game import Game
 from random import randint
 from random import random
 import pickle
+from matplotlib import pyplot as plt
+import numpy as np
 
 SAVE_FOLDER = 'LEARNED/Q_TABLE/'
 
@@ -9,16 +11,16 @@ SAVE_FOLDER = 'LEARNED/Q_TABLE/'
 class script(object):
 	
 # Q = {
-#	state1 = {
+#	state1 = [
 #		action1 = value1
 #		action2 = value2
 #		action3 = value3
-#	},
-#	state2 = {
+#	],
+#	state2 = [
 #		action1 = value1
 #		action2 = value2
 #		action3 = value3
-#	},
+#	],
 # }
 
 	def __init__(self):
@@ -26,7 +28,8 @@ class script(object):
 		self.game.onGameOver(self.handleGameOver)
 		self.__gameRunnig = True
 		self.Q = {}
-		self.run()
+		# self.run()
+		self.experiment()
 
 	def run(self):
 		self.qLearning(32, 0.8, 0.1)
@@ -44,6 +47,31 @@ class script(object):
 		print('Score:', self.game.getScore())
 		print('Height:', self.game.getRemovedLines())
 
+	def experiment(self):
+		steps = [ 1, 2, 4, 8 ]
+		ind = [x for x in range(len(steps))]
+		y = []
+		for i in steps:
+			self.Q = {}
+			self.qLearning(i, 0.8, 0.1)
+			hTable = []
+			for j in range(5):
+				self.game.reset()
+				self.__gameRunnig = True
+				state = self.game.getState()
+				while self.__gameRunnig:
+					Q = self.getQForState(state)
+					action = Q.index(max(Q))
+					self.game.move(action)
+					state = self.game.getState()
+				hTable.append(self.game.getRemovedLines())
+			print('hTable', hTable)
+			y.append(np.average(hTable))
+
+		print('y',y)
+		plt.bar(ind, y)
+		plt.xticks(ind, steps)
+		plt.show()
 
 	def qLearning(self, learningGames, gamma, epsilon):
 		actionCount = self.game.getNumActions()

@@ -3,13 +3,16 @@ from Network.Network import Net, LearningMethod
 from Network import LoadNet
 from random import randint
 from random import random
+from matplotlib import pyplot as plt
+import numpy as np
 
 class script(object):
 
 	def __init__(self):
 		self.game = Game()
 		self.game.onGameOver(self.handleGameOver)
-		self.run()
+		self.experiment()
+		# self.run()
 		# self.trainForever()
 
 	def run(self):
@@ -26,6 +29,32 @@ class script(object):
 			# self.game.print()
 		print('Score:', self.game.getScore())
 		print('Height:', self.game.getRemovedLines())
+
+	def experiment(self):
+		steps = [ 1, 2, 4, 8 ]
+		ind = [x for x in range(len(steps))]
+		y = []
+		for i in steps:
+			net = self.qlearningNeuralNetwork(i, 100, 0.8, 0.1)
+			hTable = []
+			for j in range(5):
+				self.game.reset()
+				self.__gameRunnig = True
+				state = self.game.getState()
+				while self.__gameRunnig:
+					Q = net.Sim(state)
+					action = Q.index(max(Q))
+					self.game.move(action)
+					state = self.game.getState()
+				hTable.append(self.game.getRemovedLines())
+			print('hTable', hTable)
+			y.append(np.average(hTable))
+
+		print('y',y)
+		plt.bar(ind, y)
+		plt.xticks(ind, steps)
+		plt.show()
+
 	
 	def trainForever(self):
 		i = 0
@@ -73,7 +102,7 @@ class script(object):
 			score = self.game.getScore()
 			if score > bestScore:
 				bestScore = score
-				net.save('tra_'+str(bestScore))
+				# net.save('tra_'+str(bestScore))
 		print()
 		print('Best score:', bestScore)
 		return net
